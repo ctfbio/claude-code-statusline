@@ -46,9 +46,24 @@ setup() {
   [ "$output" = "¥232" ]
 }
 
-@test "format_currency_amount: XAU uses oz suffix + 4 decimals" {
+@test "format_currency_amount: XAU uses Gold Oz suffix + 4 decimals" {
   run format_currency_amount 0.00042 XAU
-  [ "$output" = "0.0004 oz" ]
+  [ "$output" = "0.0004 Gold Oz" ]
+}
+
+@test "format_plan_tag: max plan emits ' • max'" {
+  run format_plan_tag max
+  [ "$output" = " • max" ]
+}
+
+@test "format_plan_tag: pro plan emits ' • pro'" {
+  run format_plan_tag pro
+  [ "$output" = " • pro" ]
+}
+
+@test "format_plan_tag: api plan emits nothing" {
+  run format_plan_tag api
+  [ "$output" = "" ]
 }
 
 @test "format_plan_prefix: api plan emits nothing" {

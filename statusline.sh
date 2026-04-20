@@ -169,10 +169,12 @@ COST_MAIN=$(fmt_amount_all "$TOTAL_COST_USD")
 
 # ─── Compose output by mode ───────────────────────────────────────────────
 EFFORT=$(read_effort_level)
+PLAN_TAG=$(format_plan_tag "$PLAN")
 MODEL_SEG="$MODEL_NAME"
 if [ "$SHOW_EFFORT" = "true" ] && [ -n "$EFFORT" ]; then
   MODEL_SEG="$MODEL_NAME • $EFFORT"
 fi
+MODEL_SEG="${MODEL_SEG}${PLAN_TAG}"
 
 RATE_SEG=""
 if [ "$SHOW_RATE" = "true" ]; then

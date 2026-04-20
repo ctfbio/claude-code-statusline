@@ -75,7 +75,13 @@ EOF
   [ "$output" = "xhigh" ]
 }
 
-@test "resolve_plan: defaults to api when no config" {
+@test "resolve_plan: respects explicit 'api' in settings" {
+  # Without this explicit override, auto-detect tries the macOS Keychain /
+  # Linux libsecret which may succeed on real machines but returns different
+  # values per environment — not a stable CI assertion.
+  cat > "$CLAUDE_SETTINGS_PATH" <<'EOF'
+{"statusline": {"plan": "api"}}
+EOF
   run resolve_plan
   [ "$output" = "api" ]
 }

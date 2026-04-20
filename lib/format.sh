@@ -76,7 +76,7 @@ format_currency_amount() {
       printf '%s%s' "$symbol" "$formatted"
       ;;
     XAU)
-      printf '%s oz' "$formatted"
+      printf '%s Gold Oz' "$formatted"
       ;;
     *)
       printf '%s %s' "$formatted" "$symbol"
@@ -84,14 +84,28 @@ format_currency_amount() {
   esac
 }
 
-# ─── Plan-aware cost label ────────────────────────────────────────────────
-# When the user is on a Max/Pro plan, Claude Code still emits a USD cost
-# in its statusline payload — but it's the pay-as-you-go API equivalent,
-# not a real charge. Users need this labeled unambiguously.
+# ─── Plan-aware labels ────────────────────────────────────────────────────
+# Max/Pro plans include a generous token allowance — the cost Claude Code
+# reports is the PAY-AS-YOU-GO API equivalent, not a real charge. Two pieces
+# make the plan explicit to the user:
+#   1. A tag next to the model  (" • max" / " • pro")
+#   2. An "API≡" prefix on cost + rate fields
 #
-#   format_plan_prefix api  → ""        (no prefix; raw cost is real)
-#   format_plan_prefix pro  → "API≡ "    (triple-bar equivalence)
+#   format_plan_tag api     → ""
+#   format_plan_tag pro     → " • pro"
+#   format_plan_tag max     → " • max"
+#   format_plan_tag free    → " • free"
+#
+#   format_plan_prefix api  → ""
+#   format_plan_prefix pro  → "API≡ "
 #   format_plan_prefix max  → "API≡ "
+#   format_plan_prefix free → "API≡ "
+format_plan_tag() {
+  case "$1" in
+    pro|max|free) printf ' • %s' "$1" ;;
+    *) printf '' ;;
+  esac
+}
 format_plan_prefix() {
   case "$1" in
     pro|max|free) printf 'API≡ ' ;;

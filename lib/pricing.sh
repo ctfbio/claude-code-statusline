@@ -121,36 +121,64 @@ resolve_plan() {
     api|pro|max|free) printf '%s' "$explicit"; return 0 ;;
   esac
 
-  # Auto-detection: look for hints in ~/.claude/ credentials / auth files.
-  # The CLI writes a creds file when signed in via claude.ai. Its exact shape
-  # is internal and may change — we grep a handful of telltale keys.
+  # Auto-detection — three sources, tried in order:
+  #
+  # 1. macOS Keychain (claude.ai logins on macOS store credentials here, NOT
+  #    in a file). Key name is "Claude Code-credentials", entry shape is
+  #    { claudeAiOauth: { subscriptionType: "max"|"pro"|..., rateLimitTier: ... } }.
+  # 2. ~/.claude/ JSON credential files (possible on Linux / Windows Git Bash
+  #    or in older CLI versions that write to disk).
+  # 3. Fallback: "api" (show raw cost, no label).
+  local p
+
+  # macOS Keychain.
+  if command -v security >/dev/null 2>&1; then
+    p=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null \
+      | jq -r '.claudeAiOauth.subscriptionType // empty' 2>/dev/null \
+      | tr '[:upper:]' '[:lower:]')
+    case "$p" in
+      *max*) printf 'max'; return 0 ;;
+      *pro*) printf 'pro'; return 0 ;;
+      *team*|*console*|*api*) printf 'api'; return 0 ;;
+    esac
+  fi
+
+  # Linux libsecret (best effort — schema may differ across distros).
+  if command -v secret-tool >/dev/null 2>&1; then
+    p=$(secret-tool lookup service "Claude Code-credentials" 2>/dev/null \
+      | jq -r '.claudeAiOauth.subscriptionType // empty' 2>/dev/null \
+      | tr '[:upper:]' '[:lower:]')
+    case "$p" in
+      *max*) printf 'max'; return 0 ;;
+      *pro*) printf 'pro'; return 0 ;;
+      *team*|*console*|*api*) printf 'api'; return 0 ;;
+    esac
+  fi
+
+  # File-based credentials (Git Bash / older CLI / custom installs).
   local auth_candidates=(
     "$HOME/.claude/.credentials.json"
     "$HOME/.claude/credentials.json"
     "$HOME/.claude/auth.json"
-    "$HOME/.claude/.credentials"
   )
-  local p f content
+  local f content
   for f in "${auth_candidates[@]}"; do
     [ -r "$f" ] || continue
-    # Only read if it's JSON (avoid binary cred blobs).
-    if jq empty "$f" >/dev/null 2>&1; then
-      content=$(cat "$f" 2>/dev/null)
-      # Look for known plan markers. These are best-effort and documented
-      # as such — users on Max/Pro should set plan explicitly in settings.
-      p=$(printf '%s\n' "$content" | jq -r '
-        .subscription.plan //
-        .account.plan //
-        .plan //
-        .subscriptionType //
-        empty
-      ' 2>/dev/null | tr '[:upper:]' '[:lower:]')
-      case "$p" in
-        *max*)  printf 'max'; return 0 ;;
-        *pro*)  printf 'pro'; return 0 ;;
-        *team*|*console*|*api*) printf 'api'; return 0 ;;
-      esac
-    fi
+    jq empty "$f" >/dev/null 2>&1 || continue
+    content=$(cat "$f" 2>/dev/null)
+    p=$(printf '%s\n' "$content" | jq -r '
+      .claudeAiOauth.subscriptionType //
+      .subscription.plan //
+      .account.plan //
+      .plan //
+      .subscriptionType //
+      empty
+    ' 2>/dev/null | tr '[:upper:]' '[:lower:]')
+    case "$p" in
+      *max*) printf 'max'; return 0 ;;
+      *pro*) printf 'pro'; return 0 ;;
+      *team*|*console*|*api*) printf 'api'; return 0 ;;
+    esac
   done
 
   # Default: api (show raw cost, no label).
