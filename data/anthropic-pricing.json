@@ -1,0 +1,159 @@
+{
+  "$schema": "./anthropic-pricing.schema.json",
+  "source": "extracted from @anthropic-ai/claude-code utils/modelCost.ts and utils/model/configs.ts",
+  "extracted_at": "2026-04-19",
+  "cli_version": "2.1.114",
+  "unit": "usd_per_million_tokens",
+  "notes": {
+    "cache_tier": "Single rate per model matching Anthropic's 5-minute ephemeral cache tier. The CLI does not distinguish a 1h cache-write tier in its cost math.",
+    "web_search": "All models charged $0.01 per web search request.",
+    "unknown_model_fallback": "If a model ID does not match any alias, the CLI falls back to the DEFAULT_UNKNOWN_MODEL_COST tier ($5 / $25 / $6.25 / $0.50).",
+    "fast_mode": "Opus 4.6 has a 'fast mode' tier (6× base rate). Currently only triggered when usage.speed === 'fast' AND fast-mode is enabled globally."
+  },
+  "web_search_per_request_usd": 0.01,
+  "default_unknown_model": {
+    "input": 5.0,
+    "output": 25.0,
+    "cache_creation_5m": 6.25,
+    "cache_read": 0.5
+  },
+  "models": {
+    "claude-opus-4-6": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_creation_5m": 6.25,
+      "cache_read": 0.5,
+      "fast_mode": {
+        "input": 30.0,
+        "output": 150.0,
+        "cache_creation_5m": 37.5,
+        "cache_read": 3.0
+      },
+      "aliases": [
+        "claude-opus-4-6",
+        "opus",
+        "us.anthropic.claude-opus-4-6-v1"
+      ]
+    },
+    "claude-opus-4-5": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_creation_5m": 6.25,
+      "cache_read": 0.5,
+      "aliases": [
+        "claude-opus-4-5",
+        "claude-opus-4-5-20251101",
+        "us.anthropic.claude-opus-4-5-20251101-v1:0",
+        "claude-opus-4-5@20251101"
+      ]
+    },
+    "claude-opus-4-1": {
+      "input": 15.0,
+      "output": 75.0,
+      "cache_creation_5m": 18.75,
+      "cache_read": 1.5,
+      "aliases": [
+        "claude-opus-4-1",
+        "claude-opus-4-1-20250805",
+        "us.anthropic.claude-opus-4-1-20250805-v1:0",
+        "claude-opus-4-1@20250805"
+      ]
+    },
+    "claude-opus-4": {
+      "input": 15.0,
+      "output": 75.0,
+      "cache_creation_5m": 18.75,
+      "cache_read": 1.5,
+      "aliases": [
+        "claude-opus-4",
+        "claude-opus-4-20250514",
+        "us.anthropic.claude-opus-4-20250514-v1:0",
+        "claude-opus-4@20250514"
+      ]
+    },
+    "claude-sonnet-4-6": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_creation_5m": 3.75,
+      "cache_read": 0.3,
+      "aliases": [
+        "claude-sonnet-4-6",
+        "sonnet",
+        "us.anthropic.claude-sonnet-4-6"
+      ]
+    },
+    "claude-sonnet-4-5": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_creation_5m": 3.75,
+      "cache_read": 0.3,
+      "aliases": [
+        "claude-sonnet-4-5",
+        "claude-sonnet-4-5-20250929",
+        "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+        "claude-sonnet-4-5@20250929"
+      ]
+    },
+    "claude-sonnet-4": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_creation_5m": 3.75,
+      "cache_read": 0.3,
+      "aliases": [
+        "claude-sonnet-4",
+        "claude-sonnet-4-20250514",
+        "us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "claude-sonnet-4@20250514"
+      ]
+    },
+    "claude-3-7-sonnet": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_creation_5m": 3.75,
+      "cache_read": 0.3,
+      "aliases": [
+        "claude-3-7-sonnet",
+        "claude-3-7-sonnet-20250219",
+        "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "claude-3-7-sonnet@20250219"
+      ]
+    },
+    "claude-3-5-sonnet": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_creation_5m": 3.75,
+      "cache_read": 0.3,
+      "aliases": [
+        "claude-3-5-sonnet",
+        "claude-3-5-sonnet-20241022",
+        "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "claude-3-5-sonnet-v2@20241022"
+      ]
+    },
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0,
+      "cache_creation_5m": 1.25,
+      "cache_read": 0.1,
+      "aliases": [
+        "claude-haiku-4-5",
+        "haiku",
+        "claude-haiku-4-5-20251001",
+        "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "claude-haiku-4-5@20251001"
+      ]
+    },
+    "claude-3-5-haiku": {
+      "input": 0.8,
+      "output": 4.0,
+      "cache_creation_5m": 1.0,
+      "cache_read": 0.08,
+      "aliases": [
+        "claude-3-5-haiku",
+        "claude-3-5-haiku-20241022",
+        "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+        "claude-3-5-haiku@20241022"
+      ]
+    }
+  }
+}

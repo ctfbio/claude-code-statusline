@@ -1,0 +1,17 @@
+# Per-user state — never commit
+data/spending-*.json
+data/usage-cursor-*.json
+data/fx-refresh.log
+
+# Transient cache artefacts
+data/fx-cache.json.tmp
+data/fx-cache.lock
+
+# Editor / OS
+*.bak
+*.swp
+.DS_Store
+
+# NOTE: data/fx-cache.json IS tracked — seed data, refreshed daily by
+# .github/workflows/refresh-fx.yml. New installs get a starting cache
+# without needing network at first render.

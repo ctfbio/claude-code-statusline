@@ -1,0 +1,53 @@
+name: refresh-fx
+
+# Daily cron: pulls fresh FX + gold rates, commits data/fx-cache.json.
+# No untrusted inputs consumed (no github.event.* issue/pr/comment bodies).
+#
+# Data sources:
+#   - api.frankfurter.dev (MIT, ECB-sourced FX, no key)
+#   - api.gold-api.com (spot XAU, no key)
+
+on:
+  schedule:
+    - cron: "15 17 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Fetch FX + gold
+        env:
+          REPO_ROOT: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          cd "$REPO_ROOT"
+          # shellcheck source=lib/fx.sh
+          source lib/fx.sh
+          # shellcheck source=lib/gold.sh
+          source lib/gold.sh
+          export FX_CACHE_PATH="$REPO_ROOT/data/fx-cache.json"
+          fx_fetch
+          gold_fetch_and_merge
+          jq '{base, source, fetched_at, gold_fetched_at, rate_count: (.rates | length)}' "$FX_CACHE_PATH"
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet data/fx-cache.json; then
+            echo "No change."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/fx-cache.json
+          git commit -m "chore(fx): daily refresh"
+          git push

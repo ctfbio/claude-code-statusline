@@ -1,0 +1,66 @@
+name: drift-check-pricing
+
+# Weekly cron: runs bin/refresh-pricing.sh against the latest Claude Code CLI.
+# Opens a PR if the extracted pricing table differs from data/anthropic-pricing.json.
+# No untrusted inputs consumed (no github.event.* issue/pr/comment bodies).
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run drift check
+        id: drift
+        env:
+          CI: "true"
+        run: |
+          set -eo pipefail
+          set +e
+          bash bin/refresh-pricing.sh
+          CODE=$?
+          set -e
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          case $CODE in
+            0) echo "no_drift=true"  >> "$GITHUB_OUTPUT" ;;
+            1) echo "no_drift=false" >> "$GITHUB_OUTPUT" ;;
+            2) echo "::error::Pricing extraction failed. Bundle shape likely changed." ; exit 2 ;;
+          esac
+
+      - name: Open PR if drift
+        if: steps.drift.outputs.no_drift == 'false'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(pricing): sync table with latest Claude Code CLI"
+          branch: chore/sync-pricing
+          delete-branch: true
+          title: "chore(pricing): sync table with latest Claude Code CLI"
+          body: |
+            Automated pricing drift detection found a difference between
+            data/anthropic-pricing.json and the latest published Claude Code CLI.
+
+            The diff has been applied. Review carefully before merging.
+
+            Extraction: bin/refresh-pricing.sh (regex match against minified bundle).
+          labels: |
+            automated
+            pricing
